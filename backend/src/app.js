@@ -12,7 +12,21 @@ import { createLogsRoutes } from "./routes/logs.js";
 
 const app = express();
 app.use(helmet());
-app.use(cors({ origin: config.clientOrigin }));
+const origins = (config.clientOrigin || "*")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || origins.includes("*") || origins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"), false);
+    },
+  })
+);
 app.use(express.json({ limit: "2mb" }));
 app.use(morgan("dev"));
 
