@@ -2,7 +2,9 @@ import api from "../api/client";
 
 export async function listCertificates() {
     const { data } = await api.get("/issuer/certificates");
-    return data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.rows)) return data.rows;
+    return [];
 }
 
 export async function getCertificate(id: string) {
