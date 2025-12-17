@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --background: 222 60% 4%;
+    --foreground: 215 38% 95%;
+    --muted: 220 20% 30%;
+    --muted-foreground: 215 15% 70%;
+    --border: 220 26% 18%;
+    --input: 220 26% 18%;
+    --ring: 193 92% 54%;
+    --radius: 0.75rem;
+    --primary: 193 92% 54%;
+    --primary-foreground: 215 38% 10%;
+    --secondary: 261 83% 67%;
+    --secondary-foreground: 215 38% 98%;
+    --accent: 170 78% 52%;
+    --accent-foreground: 215 38% 98%;
+    --destructive: 0 75% 52%;
+    --destructive-foreground: 215 38% 98%;
+    --card: 222 30% 10%;
+    --card-foreground: 215 38% 95%;
+}
+
+* {
+    @apply box-border;
+}
+
+body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] min-h-screen antialiased;
+}
+
+a {
+    @apply text-[hsl(var(--primary))] hover:text-[hsl(var(--accent))];
+}
+
+.container-shell {
+    @apply max-w-6xl mx-auto px-4 py-6 w-full;
+}
+
+.card {
+    @apply bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl shadow-md shadow-black/30;
+}
+
+.section-title {
+    @apply text-sm uppercase tracking-[0.08em] text-[hsl(var(--muted-foreground))];
+}
+
+.table {
+    @apply w-full border-collapse;
+}
+
+.table thead tr {
+    @apply text-left text-sm text-[hsl(var(--muted-foreground))];
+}
+
+.table th,
+.table td {
+    @apply px-3 py-2 border-b border-[hsl(var(--border))];
+}
+
+.input {
+    @apply w-full rounded-lg bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))];
+}
+
+.btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors border border-transparent;
+}
+
+.btn-primary {
+    @apply btn bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary))]/80;
+}
+
+.btn-secondary {
+    @apply btn bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] hover:bg-[hsl(var(--secondary))]/80;
+}
+
+.btn-ghost {
+    @apply btn bg-transparent text-[hsl(var(--foreground))] border border-[hsl(var(--border))] hover:border-[hsl(var(--primary))];
+}
+
+.badge {
+    @apply inline-flex items-center gap-1 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 py-1 text-xs text-[hsl(var(--muted-foreground))];
+}
+
+.grid-auto {
+    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.code-block {
+    @apply rounded-lg bg-black/60 border border-[hsl(var(--border))] p-3 font-mono text-xs text-[hsl(var(--muted-foreground))] whitespace-pre-wrap break-words;
+}
+
+.skeleton {
+    @apply animate-pulse rounded-md bg-[hsl(var(--border))];
+}

@@ -1,0 +1,124 @@
+[
+  {
+    "inputs": [
+      { "internalType": "address[]", "name": "initialIssuers", "type": "address[]" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "bytes32", "name": "certificateId", "type": "bytes32" },
+      { "indexed": true, "internalType": "bytes32", "name": "docHash", "type": "bytes32" },
+      { "indexed": true, "internalType": "address", "name": "issuer", "type": "address" }
+    ],
+    "name": "Issued",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "bytes32", "name": "merkleRoot", "type": "bytes32" },
+      { "indexed": true, "internalType": "address", "name": "issuer", "type": "address" },
+      { "indexed": false, "internalType": "uint64", "name": "anchoredAt", "type": "uint64" }
+    ],
+    "name": "BatchIssued",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "bytes32", "name": "certificateId", "type": "bytes32" },
+      { "indexed": true, "internalType": "address", "name": "issuer", "type": "address" }
+    ],
+    "name": "Revoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "issuer", "type": "address" },
+      { "indexed": false, "internalType": "bool", "name": "allowed", "type": "bool" }
+    ],
+    "name": "WhitelistUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "certificateId", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "docHash", "type": "bytes32" }
+    ],
+    "name": "issue",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "merkleRoot", "type": "bytes32" }],
+    "name": "issueBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "certificateId", "type": "bytes32" }],
+    "name": "revoke",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "certificateId", "type": "bytes32" }],
+    "name": "get",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "bytes32", "name": "docHash", "type": "bytes32" },
+          { "internalType": "address", "name": "issuer", "type": "address" },
+          { "internalType": "uint64", "name": "issuedAt", "type": "uint64" },
+          { "internalType": "bool", "name": "revoked", "type": "bool" }
+        ],
+        "internalType": "struct CertificateRegistry.Certificate",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "name": "merkleRoots",
+    "outputs": [
+      { "internalType": "address", "name": "issuer", "type": "address" },
+      { "internalType": "uint64", "name": "anchoredAt", "type": "uint64" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "issuer", "type": "address" },
+      { "internalType": "bool", "name": "allowed", "type": "bool" }
+    ],
+    "name": "setWhitelist",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "whitelist",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

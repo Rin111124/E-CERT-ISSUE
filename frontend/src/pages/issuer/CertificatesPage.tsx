@@ -1,0 +1,74 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { AppLayout } from "../../layouts/AppLayout";
+import { listCertificates } from "../../services/api";
+import { StatusBadge } from "../../components/StatusBadge";
+import { Plus } from "lucide-react";
+
+export default function CertificatesPage() {
+    const [q, setQ] = useState("");
+    const [status, setStatus] = useState<string | "ALL">("ALL");
+    const [items, setItems] = useState<any[]>([]);
+
+    useEffect(() => {
+        listCertificates().then(setItems);
+    }, []);
+
+    const filtered = useMemo(() => {
+        return items.filter(
+            (it) =>
+                (status === "ALL" || it.status === status) &&
+                (!q ||
+                    it.certificateId.toLowerCase().includes(q.toLowerCase()) ||
+                    (it.holderName || "").toLowerCase().includes(q.toLowerCase()))
+        );
+    }, [q, status, items]);
+
+    return (
+        <AppLayout title="Certificates" showMetaMask user={{ email: "issuer@certchain.edu", role: "Issuer" }}>
+            <div className="stack">
+                <div className="panel flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3 w-full">
+                        <input
+                            className="input md:flex-1"
+                            placeholder="Search certificateId / holder"
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                        />
+                        <select className="input md:w-48" value={status} onChange={(e) => setStatus(e.target.value)}>
+                            <option value="ALL">All</option>
+                            <option value="DRAFT">Draft</option>
+                            <option value="ISSUED">Issued</option>
+                            <option value="REVOKED">Revoked</option>
+                        </select>
+                    </div>
+                    <Link to="/issuer/certificates/new" className="btn btn-primary inline-flex items-center gap-2">
+                        <Plus size={16} />
+                        New
+                    </Link>
+                </div>
+
+                <div className="panel">
+                    <div className="grid gap-3">
+                        {filtered.map((c) => (
+                            <Link
+                                key={c.id}
+                                to={`/issuer/certificates/${c.id}`}
+                                className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-900 px-3 py-3 hover:border-cyan-400 transition"
+                            >
+                                <div className="space-y-1">
+                                    <div className="text-sm font-semibold text-white">{c.certificateId}</div>
+                                    <div className="text-xs text-slate-400">
+                                        {c.holderName || "—"} · {c.program || "—"}
+                                    </div>
+                                </div>
+                                <StatusBadge status={c.status} />
+                            </Link>
+                        ))}
+                        {filtered.length === 0 && <div className="muted text-sm">No certificates found.</div>}
+                    </div>
+                </div>
+            </div>
+        </AppLayout>
+    );
+}

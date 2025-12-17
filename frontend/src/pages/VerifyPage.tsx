@@ -1,0 +1,322 @@
+import { useState } from "react";
+import { AppLayout } from "../layouts/AppLayout";
+import { CheckCircle, AlertCircle, Upload } from "lucide-react";
+import api from "../api/client";
+
+export function VerifyPage() {
+    const [certificateId, setCertificateId] = useState("");
+    const [fileData, setFileData] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+    const [result, setResult] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleVerifyById = async () => {
+        if (!certificateId.trim()) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const { data } = await api.get(`/verify/${certificateId}`);
+            setResult(data);
+        } catch (err: any) {
+            setError(err.message || "Verify failed");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.[0]) return;
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+        setLoading(true);
+        setError(null);
+        try {
+            const { data } = await api.post("/verify", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            setResult(data);
+            setFileData(data);
+        } catch (err: any) {
+            setError(err.message || "Verify failed");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const hashMatch =
+        fileData?.hashMatch ??
+        (result?.computedHash && (result?.onChainHash || result?.onChain?.docHash)
+            ? result.computedHash.toLowerCase() === (result.onChainHash || result.onChain?.docHash || "").toLowerCase()
+            : null);
+    const revoked = result?.revoked ?? result?.status === "REVOKED";
+    const onChain = result ? result.status !== "NOT_FOUND" : null;
+    const signatureValid = result ? result.status !== "INVALID_SIGNER" && result.status !== "TAMPERED" : null;
+
+    // Derived evidence fields
+    const certIdDisplay = result?.certificateId || fileData?.certificateId || certificateId;
+    const onChainHash =
+        result?.onChainHash ||
+        result?.onChain?.docHash ||
+        result?.docHash ||
+        fileData?.onChainHash ||
+        "";
+    const fileHash = fileData?.computedHash || result?.computedHash || "";
+    const issuer = result?.issuer || result?.onChain?.issuer || "";
+    const txHash = result?.transactionHash || result?.txHash || result?.onChain?.txHash || "";
+    const blockNumber = result?.blockNumber || result?.onChain?.blockNumber || "";
+    const issuedAt =
+        result?.timestamp ||
+        (result?.onChain?.issuedAt ? Number(result.onChain.issuedAt) : null);
+    const issuedAtDisplay = issuedAt ? new Date(issuedAt * 1000).toLocaleString("vi-VN") : "N/A";
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "VALID":
+                return "text-green-400";
+            case "REVOKED":
+                return "text-yellow-400";
+            case "TAMPERED":
+                return "text-red-400";
+            default:
+                return "text-slate-400";
+        }
+    };
+
+    const getStatusIcon = (status: string) => {
+        switch (status) {
+            case "VALID":
+                return <CheckCircle size={32} className="text-green-400" />;
+            case "REVOKED":
+                return <AlertCircle size={32} className="text-yellow-400" />;
+            case "TAMPERED":
+                return <AlertCircle size={32} className="text-red-400" />;
+            default:
+                return <AlertCircle size={32} className="text-slate-400" />;
+        }
+    };
+
+    const getStatusMessage = (status: string) => {
+        switch (status) {
+            case "VALID":
+                return "Chứng chỉ hợp lệ và chưa bị thu hồi.";
+            case "REVOKED":
+                return "Chứng chỉ đã bị thu hồi bởi đơn vị cấp.";
+            case "TAMPERED":
+                return "Chứng chỉ không khớp hash on-chain (có thể bị chỉnh sửa).";
+            default:
+                return "Không thể xác minh chứng chỉ.";
+        }
+    };
+
+    const ScoreRow = ({
+        label,
+        ok,
+        warn,
+        fail,
+    }: {
+        label: string;
+        ok?: boolean | null;
+        warn?: boolean | null;
+        fail?: boolean | null;
+    }) => {
+        const cls =
+            fail === true
+                ? "text-red-400"
+                : ok === true
+                ? "text-green-400"
+                : "text-yellow-300";
+        const icon =
+            fail === true ? (
+                <AlertCircle size={16} />
+            ) : ok === true ? (
+                <CheckCircle size={16} />
+            ) : (
+                <AlertCircle size={16} />
+            );
+        return (
+            <div className={`flex items-center gap-2 rounded border border-white/10 bg-slate-900 px-3 py-2 ${cls}`}>
+                {icon}
+                <span className="text-xs text-slate-200">{label}</span>
+            </div>
+        );
+    };
+
+    const DetailCard = ({ label, value, mono }: { label: string; value: string; mono?: boolean }) => (
+        <div className="bg-slate-700 p-4 rounded">
+            <p className="text-xs text-slate-400 mb-1">{label}</p>
+            <p className={`text-sm ${mono ? "font-mono break-all text-cyan-300" : "text-slate-100"}`}>{value}</p>
+        </div>
+    );
+
+    return (
+        <AppLayout title="Xác minh chứng chỉ">
+            <div className="max-w-4xl mx-auto">
+                {!result ? (
+                    <>
+                        <h2 className="text-2xl font-bold mb-6">Xác minh chứng chỉ</h2>
+                        {error && <div className="callout danger">{error}</div>}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-slate-800 rounded-lg p-6">
+                                <h3 className="text-lg font-bold mb-4">Cách 1: nhập mã chứng chỉ</h3>
+                                <p className="text-slate-400 text-sm mb-4">
+                                    Nhập certificateId để tra cứu trạng thái on-chain.
+                                </p>
+                                <div className="space-y-4">
+                                    <input
+                                        type="text"
+                                        placeholder="VD: CERT-2026-0001"
+                                        value={certificateId}
+                                        onChange={(e) => setCertificateId(e.target.value)}
+                                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500"
+                                    />
+                                    <button
+                                        onClick={handleVerifyById}
+                                        disabled={loading || !certificateId.trim()}
+                                        className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-600 px-4 py-3 rounded font-semibold transition"
+                                    >
+                                        {loading ? "Đang xác minh..." : "Xác minh"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="bg-slate-800 rounded-lg p-6">
+                                <h3 className="text-lg font-bold mb-4">Cách 2: tải file JSON/PDF</h3>
+                                <p className="text-slate-400 text-sm mb-4">
+                                    Tải file credential để tính hash và đối chiếu on-chain.
+                                </p>
+                                <div className="space-y-4">
+                                    <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-600 rounded p-6 cursor-pointer hover:border-cyan-500 transition">
+                                        <Upload size={32} className="text-slate-400 mb-2" />
+                                        <span className="text-sm text-slate-400">Tải file JSON hoặc PDF</span>
+                                        <input
+                                            type="file"
+                                            accept=".json,.pdf"
+                                            onChange={handleFileUpload}
+                                            disabled={loading}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                    <p className="text-xs text-slate-400">Hỗ trợ: JSON, PDF | Tối đa: 10MB</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-slate-800 rounded-lg p-4">
+                                <h4 className="font-semibold text-cyan-400 mb-2">Xác minh nhanh</h4>
+                                <p className="text-xs text-slate-400">Kiểm tra mã chứng chỉ trên blockchain trong vài giây.</p>
+                            </div>
+                            <div className="bg-slate-800 rounded-lg p-4">
+                                <h4 className="font-semibold text-green-400 mb-2">Xác minh kỹ</h4>
+                                <p className="text-xs text-slate-400">Tải file để so sánh hash và chữ ký.</p>
+                            </div>
+                            <div className="bg-slate-800 rounded-lg p-4">
+                                <h4 className="font-semibold text-blue-400 mb-2">Bảo mật</h4>
+                                <p className="text-xs text-slate-400">Không lưu file; xử lý trên client.</p>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-bold mb-4">Kết quả xác minh</h2>
+
+                            <div
+                                className={`rounded-lg p-6 mb-6 border flex items-start gap-4 ${
+                                    result.status === "VALID"
+                                        ? "bg-green-900 border-green-700"
+                                        : result.status === "REVOKED"
+                                        ? "bg-yellow-900 border-yellow-700"
+                                        : "bg-red-900 border-red-700"
+                                }`}
+                            >
+                                {getStatusIcon(result.status)}
+                                <div>
+                                    <h3 className={`text-2xl font-bold mb-1 ${getStatusColor(result.status)}`}>
+                                        {result.status}
+                                    </h3>
+                                    <p className="text-slate-200">{getStatusMessage(result.status)}</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-slate-800 rounded-lg p-6 space-y-4">
+                                <h4 className="font-bold text-lg mb-4">Chi tiết chứng chỉ</h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <DetailCard label="Certificate ID" value={certIdDisplay || "—"} mono />
+                                    <DetailCard label="Ngày cấp" value={issuedAtDisplay} />
+                                    <DetailCard label="Thu hồi" value={revoked ? "Có" : "Không"} />
+                                    <DetailCard label="TX Hash" value={txHash || "…"} mono />
+                                    <DetailCard label="Issuer" value={issuer || "…"} mono />
+                                    <DetailCard label="Block" value={blockNumber || "…"} mono />
+                                </div>
+
+                                <div className="border-t border-slate-700 pt-4 space-y-3">
+                                    <h5 className="font-semibold mb-1">Giá trị hash</h5>
+                                    <DetailCard label="File hash (tính toán)" value={fileHash || "…"} mono />
+                                    <DetailCard label="On-chain hash" value={onChainHash || "…"} mono />
+                                    <div className="text-xs text-slate-400">
+                                        {hashMatch === true ? (
+                                            <p className="text-green-400">Hash khớp</p>
+                                        ) : hashMatch === false ? (
+                                            <p className="text-red-400">Hash không khớp (chứng chỉ bị chỉnh sửa)</p>
+                                        ) : (
+                                            <p className="text-yellow-300">Chưa có đủ dữ liệu hash</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-slate-700 pt-4">
+                                    <h5 className="font-semibold mb-3">Scorecard</h5>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                        <ScoreRow label="On-chain tồn tại" ok={onChain === true} warn={onChain === null} />
+                                        <ScoreRow label="Hash khớp" ok={hashMatch === true} fail={hashMatch === false} warn={hashMatch === null} />
+                                        <ScoreRow label="Chữ ký hợp lệ" ok={signatureValid === true} warn={signatureValid === null} />
+                                        <ScoreRow label="Không bị revoke" ok={revoked === false} fail={revoked === true} warn={revoked === null} />
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-slate-700 pt-4">
+                                    <h5 className="font-semibold mb-2">Evidence (JSON)</h5>
+                                    <pre className="code-block">
+                                        {JSON.stringify(
+                                            {
+                                                status: result?.status,
+                                                certificateId: certIdDisplay,
+                                                issuer,
+                                                txHash,
+                                                blockNumber,
+                                                onChainHash,
+                                                fileHash,
+                                            },
+                                            null,
+                                            2
+                                        )}
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => {
+                                    setResult(null);
+                                    setCertificateId("");
+                                    setFileData(null);
+                                }}
+                                className="flex-1 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded font-semibold transition"
+                            >
+                                Xác minh chứng chỉ khác
+                            </button>
+                            <button className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded font-semibold transition">
+                                Tải báo cáo
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
+        </AppLayout>
+    );
+}

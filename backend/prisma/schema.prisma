@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ISSUER_ADMIN
+  STUDENT
+  SYS_ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  fullName  String
+  role      Role
+  ethAddress String? @unique
+  createdAt DateTime @default(now())
+  certificatesIssued Certificate[] @relation("IssuerCertificates")
+  certificatesOwned  Certificate[] @relation("StudentCertificates")
+}
+
+model Template {
+  id          String   @id @default(uuid())
+  name        String
+  schema      Json
+  issuer      User     @relation("IssuerTemplates", fields: [issuerId], references: [id])
+  issuerId    String
+  createdAt   DateTime @default(now())
+  certificates Certificate[]
+}
+
+model Certificate {
+  id              String   @id @default(uuid())
+  certificateId   String   @unique
+  canonicalJson   Json
+  docHash         String
+  signature       String
+  onChainTx       String?
+  revoked         Boolean  @default(false)
+  issuer          User     @relation("IssuerCertificates", fields: [issuerId], references: [id])
+  issuerId        String
+  student         User?    @relation("StudentCertificates", fields: [studentId], references: [id])
+  studentId       String?
+  template        Template @relation(fields: [templateId], references: [id])
+  templateId      String
+  createdAt       DateTime @default(now())
+}
+
+model ClaimToken {
+  id            String   @id @default(uuid())
+  token         String   @unique
+  certificate   Certificate @relation(fields: [certificateId], references: [id])
+  certificateId String
+  expiresAt     DateTime
+  claimed       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  actorId   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}

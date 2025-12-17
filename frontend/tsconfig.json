@@ -1,0 +1,47 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "lib": [
+            "ES2020",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "jsx": "react-jsx",
+        "types": [
+            "node",
+            "vite/client"
+        ],
+        "baseUrl": "./src",
+        "paths": {
+            "@/components/*": [
+                "components/*"
+            ],
+            "@/layouts/*": [
+                "layouts/*"
+            ],
+            "@/pages/*": [
+                "pages/*"
+            ],
+            "@/lib/*": [
+                "lib/*"
+            ],
+            "@/services/*": [
+                "services/*"
+            ]
+        },
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "strict": false
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}
