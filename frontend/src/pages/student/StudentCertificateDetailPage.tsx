@@ -32,6 +32,7 @@ export default function StudentCertificateDetailPage() {
     const downloadPdf = () => {
         if (!data?.credential) return;
         const certId = data.certificate?.certificateId || id;
+        const credentialJson = JSON.stringify(data.credential, null, 2);
         const html = `
 <!doctype html>
 <html>
@@ -41,24 +42,40 @@ export default function StudentCertificateDetailPage() {
   <p>Status: ${data.certificate?.status || "N/A"}${data.certificate?.revoked ? " (Revoked)" : ""}</p>
   <p>Issued at: ${data.certificate?.issuedAt || "N/A"}</p>
   <p>Verify: ${window.location.origin}/verify/${certId}</p>
-  <pre>${JSON.stringify(data.credential, null, 2)}</pre>
   ${data.qrDataUrl ? `<img src="${data.qrDataUrl}" alt="QR" width="180" height="180" />` : ""}
-  <script>window.onload = () => { window.print(); }</script>
+  <h3>Credential JSON (embedded for verification)</h3>
+  <pre>${credentialJson}</pre>
+  <!-- Marker for backend parser -->
+  <div style="font-size:0.1px; color:#fff;">
+    CREDENTIAL_JSON_START
+    ${credentialJson}
+    CREDENTIAL_JSON_END
+  </div>
 </body>
 </html>
 `;
         const blob = new Blob([html], { type: "text/html" });
         const url = URL.createObjectURL(blob);
-        const w = window.open(url);
-        if (!w) {
-            alert("Please allow popups to print/save the PDF.");
-        }
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${certId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
     };
 
     const verify = () => {
         const certId = data?.certificate?.certificateId || data?.credential?.payload?.certificateId || id;
         if (certId) navigate(`/verify/${certId}`);
     };
+
+    const payload = data?.credential?.payload || {};
+    const cert = payload.certificate || payload; // backward compat
+    const issueDate = cert?.issuedAt || payload.issueDate;
+    const expiryDate =
+        cert?.expiresAt ??
+        (issueDate ? new Date(new Date(issueDate).setFullYear(new Date(issueDate).getFullYear() + 2)).toISOString().split("T")[0] : null);
 
     return (
         <AppLayout title="Certificate Detail" user={{ email: "student@certchain.edu", role: "Student" }}>
@@ -77,13 +94,13 @@ export default function StudentCertificateDetailPage() {
                                 Download JSON
                             </button>
                             <button className="btn btn-primary" onClick={downloadPdf}>
-                                Tải PDF (in)
+                                Tải PDF
                             </button>
                         </div>
                         <div className="grid two">
                             <div className="stack rounded-lg border border-white/10 bg-slate-900 p-3">
                                 <div className="text-xs text-slate-400">Certificate ID</div>
-                                <div className="font-mono text-sm">{data.certificate?.certificateId || "N/A"}</div>
+                                <div className="font-mono text-sm">{data.certificate?.certificateId || cert?.id || "N/A"}</div>
                             </div>
                             <div className="stack rounded-lg border border-white/10 bg-slate-900 p-3">
                                 <div className="text-xs text-slate-400">Trạng thái</div>
@@ -94,7 +111,11 @@ export default function StudentCertificateDetailPage() {
                             </div>
                             <div className="stack rounded-lg border border-white/10 bg-slate-900 p-3">
                                 <div className="text-xs text-slate-400">Ngày cấp</div>
-                                <div className="text-sm">{data.certificate?.issuedAt || "N/A"}</div>
+                                <div className="text-sm">{issueDate || data.certificate?.issuedAt || "N/A"}</div>
+                            </div>
+                            <div className="stack rounded-lg border border-white/10 bg-slate-900 p-3">
+                                <div className="text-xs text-slate-400">Ngày hết hạn</div>
+                                <div className="text-sm">{expiryDate || "Mặc định +2 năm"}</div>
                             </div>
                             <div className="stack rounded-lg border border-white/10 bg-slate-900 p-3">
                                 <div className="text-xs text-slate-400">Tx hash</div>

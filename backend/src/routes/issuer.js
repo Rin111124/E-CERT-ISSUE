@@ -81,7 +81,7 @@ router.post(
       const { payload, templateId } = req.body;
       const canonical = canonicalize(payload);
       const docHash = sha256Hex(Buffer.from(canonical, "utf8"));
-      const certificateId = payload.certificateId;
+      const certificateId = payload.certificateId || payload.certificate?.id || payload.id;
       const messageHash = buildSigningMessage({
         certificateId,
         docHash,
@@ -232,7 +232,8 @@ router.post(
         blockNumber: tx.blockNumber,
       });
       // Auto-assign to student account. If email not exists -> create new student user with random password.
-      const studentEmail = cert.canonicalJson?.studentEmail;
+      const studentEmail = cert.canonicalJson?.studentEmail || cert.canonicalJson?.recipient?.email;
+      const studentName = cert.canonicalJson?.studentName || cert.canonicalJson?.recipient?.fullName;
       let studentUser = null;
       let createdStudentPassword = null;
       if (studentEmail) {
@@ -242,7 +243,7 @@ router.post(
           const hashed = await bcrypt.hash(createdStudentPassword, 10);
           studentUser = await User.create({
             email: studentEmail,
-            fullName: cert.canonicalJson?.studentName || studentEmail,
+            fullName: studentName || studentEmail,
             password: hashed,
             role: "STUDENT",
             forcePasswordReset: true,

@@ -67,24 +67,24 @@ export default function App() {
   const navItems = useMemo(() => {
     if (!token) {
       return [
-        { to: "/", label: "Home" },
-        { to: "/verify", label: "Verify" },
-        { to: "/auth/login", label: "Login" },
+        { to: "/", label: "Trang chủ" },
+        { to: "/verify", label: "Xác minh" },
+        { to: "/auth/login", label: "Đăng nhập" },
       ];
     }
     if (isIssuer) {
       return [
-        { to: "/verify", label: "Verify" },
-        { to: "/issuer/certificates", label: "Certificates" },
-        { to: "/issuer/templates", label: "Templates" },
-        { to: "/issuer/settings", label: "Settings" },
+        { to: "/verify", label: "Xác minh" },
+        { to: "/issuer/certificates", label: "Chứng chỉ" },
+        { to: "/issuer/templates", label: "Template" },
+        { to: "/issuer/settings", label: "Cài đặt" },
       ];
     }
     if (isStudent) {
       return [
-        { to: "/verify", label: "Verify" },
-        { to: "/student/certificates", label: "My Certificates" },
-        { to: "/student/claim", label: "Claim" },
+        { to: "/verify", label: "Xác minh" },
+        { to: "/student/certificates", label: "Chứng chỉ của tôi" },
+        { to: "/student/claim", label: "Nhận chứng chỉ" },
         { to: "/student/change-password", label: "Đổi mật khẩu" },
       ];
     }

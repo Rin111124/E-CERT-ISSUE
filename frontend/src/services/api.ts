@@ -43,3 +43,8 @@ export async function changePassword(currentPassword: string, newPassword: strin
     const { data } = await api.post("/auth/change-password", { currentPassword, newPassword });
     return data;
 }
+
+export async function revokeCertificate(id: string) {
+    const { data } = await api.post(`/issuer/certificates/${id}/revoke`);
+    return data;
+}

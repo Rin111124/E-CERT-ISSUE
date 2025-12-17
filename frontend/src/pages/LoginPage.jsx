@@ -19,16 +19,16 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div className="card">
-      <h2>Login</h2>
+      <h2>Đăng nhập</h2>
       <form onSubmit={submit} className="grid">
         <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input
-          placeholder="Password"
+          placeholder="Mật khẩu"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit">Login</button>
+        <button type="submit">Đăng nhập</button>
         {error && <div style={{ color: "salmon" }}>{error}</div>}
       </form>
     </div>
