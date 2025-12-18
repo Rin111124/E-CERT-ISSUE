@@ -25,6 +25,9 @@ app.use(
       }
       return callback(new Error("Not allowed by CORS"), false);
     },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
+    optionsSuccessStatus: 204,
   })
 );
 app.use(express.json({ limit: "2mb" }));
