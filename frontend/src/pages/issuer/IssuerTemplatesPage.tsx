@@ -18,9 +18,11 @@ export default function IssuerTemplatesPage() {
         setError(null);
         try {
             const { data } = await api.get("/issuer/templates");
-            setItems(data);
+            const nextItems = Array.isArray(data) ? data : Array.isArray(data?.rows) ? data.rows : [];
+            setItems(nextItems);
         } catch (e: any) {
             setError(e.response?.data?.message || e.message || "Không tải được template");
+            setItems([]);
         } finally {
             setLoading(false);
         }

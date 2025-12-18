@@ -4,6 +4,7 @@ export async function listCertificates() {
     const { data } = await api.get("/issuer/certificates");
     if (Array.isArray(data)) return data;
     if (Array.isArray(data?.rows)) return data.rows;
+    if (Array.isArray(data?.data)) return data.data;
     return [];
 }
 
@@ -28,7 +29,10 @@ export async function uploadAndVerify(file: File) {
 
 export async function listStudentCertificates() {
     const { data } = await api.get("/students/me/certificates");
-    return data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.rows)) return data.rows;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
 }
 
 export async function claimCertificate(token: string) {

@@ -24,7 +24,8 @@ export default function CertificatesPage() {
     }, []);
 
     const filtered = useMemo(() => {
-        return (items || []).filter(
+        const safeItems = Array.isArray(items) ? items : [];
+        return safeItems.filter(
             (it) =>
                 (status === "ALL" || it.status === status) &&
                 (!q ||
@@ -41,7 +42,7 @@ export default function CertificatesPage() {
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3 w-full">
                         <input
                             className="input md:flex-1"
-                            placeholder="Tìm certificateId / người nhận"
+                            placeholder="Tìm certificateId hoặc người nhận"
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
                         />
@@ -69,7 +70,8 @@ export default function CertificatesPage() {
                                 <div className="space-y-1">
                                     <div className="text-sm font-semibold text-white">{c.certificateId}</div>
                                     <div className="text-xs text-slate-400">
-                                        {(c.holderName || c.studentName || "—")} • {(c.program || c.courseName || "—")}
+                                        {(c.holderName || c.studentName || "Chưa rõ")} ·{" "}
+                                        {(c.program || c.courseName || "Chưa rõ")}
                                     </div>
                                 </div>
                                 <StatusBadge status={c.status} />

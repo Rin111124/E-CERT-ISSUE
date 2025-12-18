@@ -8,11 +8,13 @@ export default function StudentCertificatesPage() {
     const [items, setItems] = useState<any[]>([]);
 
     useEffect(() => {
-        listStudentCertificates().then(setItems).catch(() => setItems([]));
+        listStudentCertificates()
+            .then((data) => setItems(Array.isArray(data) ? data : []))
+            .catch(() => setItems([]));
     }, []);
 
     return (
-        <AppLayout title="My Certificates" user={{ email: "student@certchain.edu", role: "Student" }}>
+        <AppLayout title="Chứng chỉ của tôi" user={{ email: "student@certchain.edu", role: "Student" }}>
             <div className="panel">
                 <div className="section-title">Danh sách chứng chỉ</div>
                 <div className="grid gap-3">
@@ -24,7 +26,7 @@ export default function StudentCertificatesPage() {
                         >
                             <div className="space-y-1">
                                 <div className="text-sm font-semibold text-white">{c.certificateId}</div>
-                                <div className="text-xs text-slate-400">{c.program || "—"}</div>
+                                <div className="text-xs text-slate-400">{c.program || c.courseName || "Chưa rõ"}</div>
                             </div>
                             <StatusBadge status={c.status} />
                         </Link>
